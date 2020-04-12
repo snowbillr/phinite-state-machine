@@ -22,10 +22,10 @@ export class ConditionalTransition<T> implements Transition<T> {
       }
     }
 
-    phiniteStateMachine.scene.events.on('a', updateCallback);
+    phiniteStateMachine.scene.events.on(Phaser.Scenes.Events.POST_UPDATE, updateCallback);
 
     return () => {
-      phiniteStateMachine.scene.events.off('a', updateCallback);
+      phiniteStateMachine.scene.events.off(Phaser.Scenes.Events.POST_UPDATE, updateCallback);
     }
   }
 }

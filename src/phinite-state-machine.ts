@@ -1,4 +1,4 @@
-import { Phaser } from 'mock-phaser';
+import Phaser from 'phaser';
 import { State } from 'types/state';
 import { Transition } from 'types/transition';
 

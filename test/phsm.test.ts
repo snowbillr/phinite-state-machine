@@ -1,5 +1,6 @@
 import { PhiniteStateMachine } from '../src';
 import { BaseTransition } from '../src/transitions/base-transition';
+import { Scene } from '../mocks/phaser';
 
 describe('PhiniteStateMachine', () => {
   it('exists', () => {
@@ -31,7 +32,7 @@ describe('PhiniteStateMachine', () => {
         }
       ]
 
-      const phsm = new PhiniteStateMachine<typeof entity>(entity, states, states[0]);
+      const phsm = new PhiniteStateMachine<typeof entity>(new Scene() as unknown as Phaser.Scene, entity, states, states[0]);
 
       phsm.doTransition(states[0].transitions[0]);
 
