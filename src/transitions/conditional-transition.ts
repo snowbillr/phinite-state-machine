@@ -1,3 +1,4 @@
+import Phaser from 'phaser';
 import { Transition, TransitionTo, TransitionCallback, TriggerCanceller } from 'types/transition';
 import { PhiniteStateMachine } from '../phinite-state-machine';
 
