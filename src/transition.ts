@@ -1,4 +1,5 @@
 export type TriggerCanceller = () => void;
+export type TriggerActivator = () => void;
 
 export type TransitionTo<T> = string | ((entity: T) => string);
 
@@ -20,7 +21,7 @@ export abstract class Transition<T> {
     this.callbacks = callbacks;
   }
 
-  abstract registerTrigger(): TriggerCanceller;
+  abstract registerTrigger(activateTrigger: TriggerActivator): TriggerCanceller;
 
   abstract run(): void;
 

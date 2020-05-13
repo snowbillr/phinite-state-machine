@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { State } from './state';
-import { Transition, TriggerCanceller } from './transition';
+import { Transition, TriggerCanceller, TriggerActivator } from './transition';
+import { generateUuid } from './uuid';
 
 export class PhiniteStateMachine<T> {
   public readonly scene: Phaser.Scene;
@@ -10,6 +11,7 @@ export class PhiniteStateMachine<T> {
 
   private states: State<T>[];
   private triggerCancelers: TriggerCanceller[];
+  private triggerIds: string[];
 
   /*
   private enabled: boolean;
@@ -32,7 +34,10 @@ export class PhiniteStateMachine<T> {
     */
 
     this.currentState = initialState;
+    this.triggerIds = [];
     this.triggerCancelers = [];
+
+    this.registerTransitionTriggers();
   }
 
   update() {
@@ -84,13 +89,21 @@ export class PhiniteStateMachine<T> {
   }
 
   private cancelTransitionTriggers() {
+    this.triggerIds = [];
     this.triggerCancelers.forEach(canceler => canceler());
     this.triggerCancelers = [];
   }
 
   private registerTransitionTriggers() {
     this.currentState.transitions.forEach(transition => {
-      this.triggerCancelers.push(transition.registerTrigger());
+      const triggerId = generateUuid();
+      const activateTrigger: TriggerActivator = () => {
+        if (this.triggerIds.includes(triggerId)) {
+          this.doTransition(transition);
+        }
+      };
+      this.triggerIds.push(triggerId);
+      this.triggerCancelers.push(transition.registerTrigger(activateTrigger));
     });
 
     /*
