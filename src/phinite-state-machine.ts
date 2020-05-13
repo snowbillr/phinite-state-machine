@@ -1,22 +1,27 @@
 import Phaser from 'phaser';
 import { State } from 'types/state';
-import { Transition } from 'types/transition';
+import { Transition, TriggerCanceller } from 'transition';
 
 export class PhiniteStateMachine<T> {
   public readonly scene: Phaser.Scene;
-  public entity: T;
+  public readonly entity: T;
+
+  public currentState: State<T>;
+
   private states: State<T>[];
+  private triggerCancelers: TriggerCanceller[];
 
   /*
   private enabled: boolean;
   private initialState: State<T>;
   */
 
-  private triggerCancelers: (() => void)[];
-
-  public currentState: State<T>;
-
-  constructor(scene: Phaser.Scene, entity: T, states: State<T>[], initialState: State<T>) {
+  constructor(
+    scene: Phaser.Scene,
+    entity: T,
+    states: State<T>[],
+    initialState: State<T>
+  ) {
     this.scene = scene;
     this.entity = entity;
     this.states = states;
@@ -39,10 +44,15 @@ export class PhiniteStateMachine<T> {
 
     this.currentState.onLeave?.(this.entity, this.currentState.data ?? {});
 
-    transition.onTransition?.(this.entity);
+    transition.onTransition(this.entity);
 
-    const nextStateId =  typeof transition.to === 'string' ? transition.to : transition.to(this.entity);
-    this.currentState = this.states.find(state => state.id === nextStateId) as State<T>;
+    const nextStateId =
+      typeof transition.to === 'string'
+        ? transition.to
+        : transition.to(this.entity);
+    this.currentState = this.states.find(
+      state => state.id === nextStateId
+    ) as State<T>;
     this.currentState.onEnter?.(this.entity, this.currentState.data ?? {});
 
     this.registerTransitionTriggers();
@@ -68,9 +78,9 @@ export class PhiniteStateMachine<T> {
   destroy() {
     this.cancelTransitionTriggers();
 
-    delete this.entity;
-    delete this.states;
-    delete this.currentState;
+    // delete this.entity;
+    this.states = [];
+    // delete this.currentState;
   }
 
   private cancelTransitionTriggers() {
@@ -80,7 +90,7 @@ export class PhiniteStateMachine<T> {
 
   private registerTransitionTriggers() {
     this.currentState.transitions.forEach(transition => {
-      this.triggerCancelers.push(transition.registerTrigger(this));
+      this.triggerCancelers.push(transition.registerTrigger());
     });
 
     /*

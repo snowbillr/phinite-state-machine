@@ -1,11 +1,11 @@
-import { Transition } from 'types/transition';
+import { Transition } from '../transition';
 
 export type StateData = Record<string, any>;
 
 export interface State<T> {
   id: string;
 
-  data?: {[key: string]: any},
+  data?: { [key: string]: any };
   transitions: Transition<T>[];
 
   onEnter?: (entity: T, data: StateData) => void;
