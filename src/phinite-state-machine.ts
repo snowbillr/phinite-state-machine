@@ -1,6 +1,6 @@
 import Phaser from 'phaser';
-import { State } from 'types/state';
-import { Transition, TriggerCanceller } from 'transition';
+import { State } from './state';
+import { Transition, TriggerCanceller } from './transition';
 
 export class PhiniteStateMachine<T> {
   public readonly scene: Phaser.Scene;
@@ -36,13 +36,13 @@ export class PhiniteStateMachine<T> {
   }
 
   update() {
-    this.currentState.onUpdate?.(this.entity, this.currentState.data ?? {});
+    this.currentState.onUpdate(this.entity);
   }
 
   doTransition(transition: Transition<T>) {
     this.cancelTransitionTriggers();
 
-    this.currentState.onLeave?.(this.entity, this.currentState.data ?? {});
+    this.currentState.onLeave(this.entity);
 
     transition.onTransition(this.entity);
 
@@ -53,7 +53,7 @@ export class PhiniteStateMachine<T> {
     this.currentState = this.states.find(
       state => state.id === nextStateId
     ) as State<T>;
-    this.currentState.onEnter?.(this.entity, this.currentState.data ?? {});
+    this.currentState.onEnter(this.entity);
 
     this.registerTransitionTriggers();
   }

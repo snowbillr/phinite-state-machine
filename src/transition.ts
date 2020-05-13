@@ -10,7 +10,7 @@ type TransitionCallbacks<T> = {
   onLeave?: TransitionCallback<T>;
 };
 
-export abstract class Transition<T extends any> {
+export abstract class Transition<T> {
   public to: TransitionTo<T>;
 
   private callbacks: TransitionCallbacks<T>;

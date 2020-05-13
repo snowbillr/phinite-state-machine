@@ -1,6 +1,7 @@
 import { PhiniteStateMachine } from '../src';
 import { Transition } from '../src/transition';
 import { Scene } from '../mocks/phaser';
+import { State } from '../src/state';
 
 describe('PhiniteStateMachine', () => {
   it('exists', () => {
@@ -26,19 +27,20 @@ describe('PhiniteStateMachine', () => {
         run() {}
       };
 
+      const stateAOnEnterSpy = jest.fn();
+      const stateAOnLeaveSpy = jest.fn();
+      const stateBOnEnterSpy = jest.fn();
+      const stateBOnLeaveSpy = jest.fn();
+
       const states = [
-        {
-          id: 'stateA',
-          transitions: [new SimpleTransition()],
-          onEnter: jest.fn(),
-          onLeave: jest.fn(),
-        },
-        {
-          id: 'stateB',
-          transitions: [],
-          onEnter: jest.fn(),
-          onLeave: jest.fn(),
-        },
+        new State('stateA', [new SimpleTransition()], {
+          onEnter: stateAOnEnterSpy,
+          onLeave: stateAOnLeaveSpy,
+        }),
+        new State('stateB', [], {
+          onEnter: stateBOnEnterSpy,
+          onLeave: stateBOnLeaveSpy,
+        }),
       ];
 
       const phsm = new PhiniteStateMachine<typeof entity>(
@@ -50,19 +52,19 @@ describe('PhiniteStateMachine', () => {
 
       phsm.doTransition(states[0].transitions[0]);
 
-      expect(states[0].onLeave).toHaveBeenCalledWith(entity, {});
+      expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, {});
       expect(onTransitionSpy).toHaveBeenCalledWith(entity);
-      expect(states[1].onEnter).toHaveBeenCalledWith(entity, {});
+      expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, {});
 
-      expect(states[0].onLeave.mock.invocationCallOrder[0]).toBeLessThan(
+      expect(stateAOnLeaveSpy.mock.invocationCallOrder[0]).toBeLessThan(
         onTransitionSpy.mock.invocationCallOrder[0]
       );
       expect(onTransitionSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        states[1].onEnter.mock.invocationCallOrder[0]
+        stateBOnEnterSpy.mock.invocationCallOrder[0]
       );
 
-      expect(states[0].onEnter).not.toHaveBeenCalled();
-      expect(states[1].onLeave).not.toHaveBeenCalled();
+      expect(stateAOnEnterSpy).not.toHaveBeenCalled();
+      expect(stateBOnLeaveSpy).not.toHaveBeenCalled();
     });
   });
 });
