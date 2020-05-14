@@ -45,8 +45,9 @@ describe('PhiniteStateMachine', () => {
         }),
       ];
 
+      const scene = (new Scene() as unknown) as Phaser.Scene;
       new PhiniteStateMachine<typeof entity>(
-        (new Scene() as unknown) as Phaser.Scene,
+        scene,
         entity,
         states,
         states[0]
@@ -56,9 +57,9 @@ describe('PhiniteStateMachine', () => {
 
       triggerTransition!();
 
-      expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, {});
+      expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, scene, {});
       expect(onTransitionSpy).toHaveBeenCalledWith(entity);
-      expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, {});
+      expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, scene, {});
 
       expect(stateAOnLeaveSpy.mock.invocationCallOrder[0]).toBeLessThan(
         onTransitionSpy.mock.invocationCallOrder[0]

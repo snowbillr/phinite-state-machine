@@ -8,13 +8,13 @@ import {
 } from './transition';
 import { generateUuid } from './uuid';
 
-export class PhiniteStateMachine<T> {
-  public readonly scene: Phaser.Scene;
+export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
+  public readonly scene: U;
   public readonly entity: T;
 
-  public currentState: State<T>;
+  public currentState: State<T, U>;
 
-  private states: State<T>[];
+  private states: State<T, U>[];
   private triggerCancelers: TriggerCanceller[];
   private triggerIds: string[];
 
@@ -24,10 +24,10 @@ export class PhiniteStateMachine<T> {
   */
 
   constructor(
-    scene: Phaser.Scene,
+    scene: U,
     entity: T,
-    states: State<T>[],
-    initialState: State<T>
+    states: State<T, U>[],
+    initialState: State<T, U>
   ) {
     this.scene = scene;
     this.entity = entity;
@@ -44,12 +44,12 @@ export class PhiniteStateMachine<T> {
   }
 
   start() {
-    this.currentState.onEnter(this.entity);
+    this.currentState.onEnter(this.entity, this.scene);
     this.registerTransitionTriggers();
   }
 
   update() {
-    this.currentState.onUpdate(this.entity);
+    this.currentState.onUpdate(this.entity, this.scene);
   }
 
   private doTransition(transition: Transition<T>) {
@@ -61,24 +61,6 @@ export class PhiniteStateMachine<T> {
     const onTransition = transition.onTransition.bind(transition);
 
     this.transitionTo(nextStateId, onTransition);
-    /*
-    this.cancelTransitionTriggers();
-
-    this.currentState.onLeave(this.entity);
-
-    transition.onTransition(this.entity);
-
-    const nextStateId =
-      typeof transition.to === 'string'
-        ? transition.to
-        : transition.to(this.entity);
-    this.currentState = this.states.find(
-      state => state.id === nextStateId
-    ) as State<T>;
-    this.currentState.onEnter(this.entity);
-
-    this.registerTransitionTriggers();
-    */
   }
 
   transitionTo(stateId: string, onTransition?: TransitionCallback<T>) {
@@ -89,13 +71,13 @@ export class PhiniteStateMachine<T> {
 
     this.cancelTransitionTriggers();
 
-    this.currentState.onLeave(this.entity);
+    this.currentState.onLeave(this.entity, this.scene);
 
     onTransition?.(this.entity);
 
     this.currentState = nextState;
 
-    this.currentState.onEnter(this.entity);
+    this.currentState.onEnter(this.entity, this.scene);
 
     this.registerTransitionTriggers();
   }
