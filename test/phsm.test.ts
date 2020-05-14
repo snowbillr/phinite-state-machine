@@ -16,14 +16,18 @@ describe('PhiniteStateMachine', () => {
 
       const onTransitionSpy = jest.fn();
       let triggerTransition: () => void;
-      class SimpleTransition extends Transition<typeof entity> {
+      class SimpleTransition extends Transition<typeof entity, Phaser.Scene> {
         constructor() {
-          super('stateB', onTransitionSpy);
+          super('stateB');
         }
 
         registerTrigger(activateTransition: () => void) {
           triggerTransition = activateTransition;
           return () => null;
+        }
+
+        onTransition(e: typeof entity, scene: Phaser.Scene) {
+          onTransitionSpy(e, scene);
         }
       }
 
@@ -56,7 +60,7 @@ describe('PhiniteStateMachine', () => {
       triggerTransition!();
 
       expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, scene, {});
-      expect(onTransitionSpy).toHaveBeenCalledWith(entity);
+      expect(onTransitionSpy).toHaveBeenCalledWith(entity, scene);
       expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, scene, {});
 
       expect(stateAOnLeaveSpy.mock.invocationCallOrder[0]).toBeLessThan(

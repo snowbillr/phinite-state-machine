@@ -75,7 +75,7 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
 
     this.currentState.onLeave(this.entity, this.scene);
 
-    onTransition?.(this.entity);
+    onTransition?.(this.entity, this.scene);
 
     this.currentState = nextState;
 
