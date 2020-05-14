@@ -124,7 +124,9 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
         }
       };
       this.triggerIds.push(triggerId);
-      this.triggerCancelers.push(transition.registerTrigger(activateTrigger));
+      this.triggerCancelers.push(
+        transition.registerTrigger(activateTrigger, this.scene)
+      );
     });
 
     /*

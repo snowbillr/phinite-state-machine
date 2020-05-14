@@ -25,8 +25,6 @@ describe('PhiniteStateMachine', () => {
           triggerTransition = activateTransition;
           return () => null;
         }
-
-        run() {}
       }
 
       const stateAOnEnterSpy = jest.fn();
