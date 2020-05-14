@@ -9,64 +9,6 @@ describe('PhiniteStateMachine', () => {
   });
 
   describe('transitioning to a new state', () => {
-    it('calls the state and transitions callbacks in the right order', () => {
-      const entity = {
-        id: 'entity',
-      };
-
-      const onTransitionSpy = jest.fn();
-      const SimpleTransition = class extends Transition<typeof entity> {
-        constructor() {
-          super('stateB', { onTransition: onTransitionSpy });
-        }
-
-        registerTrigger() {
-          return () => null;
-        }
-
-        run() {}
-      };
-
-      const stateAOnEnterSpy = jest.fn();
-      const stateAOnLeaveSpy = jest.fn();
-      const stateBOnEnterSpy = jest.fn();
-      const stateBOnLeaveSpy = jest.fn();
-
-      const states = [
-        new State('stateA', [new SimpleTransition()], {
-          onEnter: stateAOnEnterSpy,
-          onLeave: stateAOnLeaveSpy,
-        }),
-        new State('stateB', [], {
-          onEnter: stateBOnEnterSpy,
-          onLeave: stateBOnLeaveSpy,
-        }),
-      ];
-
-      const phsm = new PhiniteStateMachine<typeof entity>(
-        (new Scene() as unknown) as Phaser.Scene,
-        entity,
-        states,
-        states[0]
-      );
-
-      phsm.doTransition(states[0].transitions[0]);
-
-      expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, {});
-      expect(onTransitionSpy).toHaveBeenCalledWith(entity);
-      expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, {});
-
-      expect(stateAOnLeaveSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        onTransitionSpy.mock.invocationCallOrder[0]
-      );
-      expect(onTransitionSpy.mock.invocationCallOrder[0]).toBeLessThan(
-        stateBOnEnterSpy.mock.invocationCallOrder[0]
-      );
-
-      expect(stateAOnEnterSpy).not.toHaveBeenCalled();
-      expect(stateBOnLeaveSpy).not.toHaveBeenCalled();
-    });
-
     it('transitions when the activateTransition param is called and will not repeat that transition', () => {
       const entity = {
         id: 'entity',
@@ -108,7 +50,9 @@ describe('PhiniteStateMachine', () => {
         entity,
         states,
         states[0]
-      );
+      ).start();
+
+      expect(stateAOnEnterSpy).toHaveBeenCalledTimes(1);
 
       triggerTransition!();
 
@@ -123,7 +67,7 @@ describe('PhiniteStateMachine', () => {
         stateBOnEnterSpy.mock.invocationCallOrder[0]
       );
 
-      expect(stateAOnEnterSpy).not.toHaveBeenCalled();
+      expect(stateAOnEnterSpy).toHaveBeenCalledTimes(1);
       expect(stateBOnLeaveSpy).not.toHaveBeenCalled();
 
       triggerTransition!();
@@ -131,8 +75,28 @@ describe('PhiniteStateMachine', () => {
       expect(stateAOnLeaveSpy).toHaveBeenCalledTimes(1);
       expect(onTransitionSpy).toHaveBeenCalledTimes(1);
       expect(stateBOnEnterSpy).toHaveBeenCalledTimes(1);
-      expect(stateAOnEnterSpy).not.toHaveBeenCalled();
+      expect(stateAOnEnterSpy).toHaveBeenCalledTimes(1);
       expect(stateBOnLeaveSpy).not.toHaveBeenCalled();
+    });
+
+    it('can be told to transition from outside of a trigger', () => {
+      const states = [
+        new State<object>('a', [], {}),
+        new State<object>('b', [], {}),
+      ];
+
+      const phsm = new PhiniteStateMachine<object>(
+        (new Scene() as unknown) as Phaser.Scene,
+        {},
+        states,
+        states[0]
+      );
+
+      const transitionSpy = jest.fn();
+      phsm.transitionTo('b', transitionSpy);
+
+      expect(phsm.currentState.id).toEqual('b');
+      expect(transitionSpy).toHaveBeenCalled();
     });
   });
 });

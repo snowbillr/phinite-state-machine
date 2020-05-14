@@ -1,6 +1,11 @@
 import Phaser from 'phaser';
 import { State } from './state';
-import { Transition, TriggerCanceller, TriggerActivator } from './transition';
+import {
+  Transition,
+  TriggerCanceller,
+  TriggerActivator,
+  TransitionCallback,
+} from './transition';
 import { generateUuid } from './uuid';
 
 export class PhiniteStateMachine<T> {
@@ -36,7 +41,10 @@ export class PhiniteStateMachine<T> {
     this.currentState = initialState;
     this.triggerIds = [];
     this.triggerCancelers = [];
+  }
 
+  start() {
+    this.currentState.onEnter(this.entity);
     this.registerTransitionTriggers();
   }
 
@@ -44,7 +52,16 @@ export class PhiniteStateMachine<T> {
     this.currentState.onUpdate(this.entity);
   }
 
-  doTransition(transition: Transition<T>) {
+  private doTransition(transition: Transition<T>) {
+    const nextStateId =
+      typeof transition.to === 'string'
+        ? transition.to
+        : transition.to(this.entity);
+
+    const onTransition = transition.onTransition.bind(transition);
+
+    this.transitionTo(nextStateId, onTransition);
+    /*
     this.cancelTransitionTriggers();
 
     this.currentState.onLeave(this.entity);
@@ -58,6 +75,26 @@ export class PhiniteStateMachine<T> {
     this.currentState = this.states.find(
       state => state.id === nextStateId
     ) as State<T>;
+    this.currentState.onEnter(this.entity);
+
+    this.registerTransitionTriggers();
+    */
+  }
+
+  transitionTo(stateId: string, onTransition?: TransitionCallback<T>) {
+    const nextState = this.states.find(state => state.id === stateId);
+    if (!nextState) {
+      throw new Error(`PhiniteStateMachine - no state found for ${stateId}`);
+    }
+
+    this.cancelTransitionTriggers();
+
+    this.currentState.onLeave(this.entity);
+
+    onTransition?.(this.entity);
+
+    this.currentState = nextState;
+
     this.currentState.onEnter(this.entity);
 
     this.registerTransitionTriggers();

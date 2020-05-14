@@ -1,4 +1,4 @@
-import { Transition } from 'transition';
+import { Transition } from './transition';
 
 type StateCallback<T> = (entity: T, data: object) => void;
 
