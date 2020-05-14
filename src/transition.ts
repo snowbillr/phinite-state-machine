@@ -5,35 +5,16 @@ export type TransitionTo<T> = string | ((entity: T) => string);
 
 export type TransitionCallback<T> = (entity: T) => void;
 
-type TransitionCallbacks<T> = {
-  onTransition?: TransitionCallback<T>;
-  onEnter?: TransitionCallback<T>;
-  onLeave?: TransitionCallback<T>;
-};
-
 export abstract class Transition<T> {
   public to: TransitionTo<T>;
+  public onTransition?: TransitionCallback<T>;
 
-  private callbacks: TransitionCallbacks<T>;
-
-  constructor(to: TransitionTo<T>, callbacks: TransitionCallbacks<T>) {
+  constructor(to: TransitionTo<T>, onTransition?: TransitionCallback<T>) {
     this.to = to;
-    this.callbacks = callbacks;
+    this.onTransition = onTransition;
   }
 
   abstract registerTrigger(activateTrigger: TriggerActivator): TriggerCanceller;
 
   abstract run(): void;
-
-  onEnter(entity: T) {
-    this.callbacks.onEnter?.(entity);
-  }
-
-  onLeave(entity: T) {
-    this.callbacks.onLeave?.(entity);
-  }
-
-  onTransition(entity: T) {
-    this.callbacks.onTransition?.(entity);
-  }
 }

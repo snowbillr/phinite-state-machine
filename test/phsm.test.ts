@@ -18,7 +18,7 @@ describe('PhiniteStateMachine', () => {
       let triggerTransition: () => void;
       class SimpleTransition extends Transition<typeof entity> {
         constructor() {
-          super('stateB', { onTransition: onTransitionSpy });
+          super('stateB', onTransitionSpy);
         }
 
         registerTrigger(activateTransition: () => void) {
