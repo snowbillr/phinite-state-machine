@@ -58,7 +58,9 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
         ? transition.to
         : transition.to(this.entity);
 
-    const onTransition = transition.onTransition.bind(transition);
+    const onTransition = transition.onTransition
+      ? transition.onTransition.bind(transition)
+      : () => {};
 
     this.transitionTo(nextStateId, onTransition);
   }
