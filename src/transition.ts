@@ -1,13 +1,14 @@
 import Phaser from 'phaser';
 
 export type TriggerCanceller = () => void;
-export type TriggerActivator = () => void;
+export type TriggerActivator = (transitionData?: any) => void;
 
 export type TransitionTo<T> = string | ((entity: T) => string);
 
 export type TransitionCallback<T, U extends Phaser.Scene = Phaser.Scene> = (
   entity: T,
-  scene: U
+  scene: U,
+  transitionData?: any
 ) => void;
 
 export abstract class Transition<T, U extends Phaser.Scene = Phaser.Scene> {
@@ -23,7 +24,7 @@ export abstract class Transition<T, U extends Phaser.Scene = Phaser.Scene> {
   ): TriggerCanceller;
 
   // @ts-ignore
-  onTransition(entity: T, scene: U) {
+  onTransition(entity: T, scene: U, transitionData?: any) {
     // empty on purpose
   }
 }

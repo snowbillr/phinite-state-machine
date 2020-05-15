@@ -15,19 +15,23 @@ describe('PhiniteStateMachine', () => {
       };
 
       const onTransitionSpy = jest.fn();
-      let triggerTransition: () => void;
+      let triggerTransition: (transitionData?: any) => void;
       class SimpleTransition extends Transition<typeof entity, Phaser.Scene> {
         constructor() {
           super('stateB');
         }
 
-        registerTrigger(activateTransition: () => void) {
+        registerTrigger(activateTransition: (transitionData: any) => void) {
           triggerTransition = activateTransition;
           return () => null;
         }
 
-        onTransition(e: typeof entity, scene: Phaser.Scene) {
-          onTransitionSpy(e, scene);
+        onTransition(
+          e: typeof entity,
+          scene: Phaser.Scene,
+          transitionData?: any
+        ) {
+          onTransitionSpy(e, scene, transitionData);
         }
       }
 
@@ -59,9 +63,9 @@ describe('PhiniteStateMachine', () => {
 
       triggerTransition!();
 
-      expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, scene, {});
-      expect(onTransitionSpy).toHaveBeenCalledWith(entity, scene);
-      expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, scene, {});
+      expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, scene, undefined);
+      expect(onTransitionSpy).toHaveBeenCalledWith(entity, scene, undefined);
+      expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, scene, undefined);
 
       expect(stateAOnLeaveSpy.mock.invocationCallOrder[0]).toBeLessThan(
         onTransitionSpy.mock.invocationCallOrder[0]
@@ -159,6 +163,59 @@ describe('PhiniteStateMachine', () => {
       expect(stateAOnLeaveSpy).toHaveBeenCalled();
       expect(onTransitionSpy).toHaveBeenCalled();
       expect(stateBOnEnterSpy).toHaveBeenCalled();
+    });
+
+    it('passes transition data along to all callbacks', () => {
+      const entity = {
+        id: 'entity',
+      };
+
+      const onTransitionSpy = jest.fn();
+      let triggerTransition: (transitionData?: any) => void;
+      class SimpleTransition extends Transition<typeof entity, Phaser.Scene> {
+        constructor() {
+          super('stateB');
+        }
+
+        registerTrigger(activateTransition: () => void) {
+          triggerTransition = activateTransition;
+          return () => null;
+        }
+
+        onTransition(
+          e: typeof entity,
+          scene: Phaser.Scene,
+          transitionData?: any
+        ) {
+          onTransitionSpy(e, scene, transitionData);
+        }
+      }
+
+      const stateAOnLeaveSpy = jest.fn();
+      const stateBOnEnterSpy = jest.fn();
+      const states = [
+        new State('stateA', [new SimpleTransition()], {
+          onLeave: stateAOnLeaveSpy,
+        }),
+        new State('stateB', [], {
+          onEnter: stateBOnEnterSpy,
+        }),
+      ];
+
+      const scene = (new Scene() as unknown) as Phaser.Scene;
+      const phsm = new PhiniteStateMachine<typeof entity>(
+        scene,
+        entity,
+        states,
+        states[0]
+      );
+      phsm.start();
+
+      triggerTransition!({ a: 1 });
+
+      expect(stateAOnLeaveSpy).toHaveBeenCalledWith(entity, scene, { a: 1 });
+      expect(onTransitionSpy).toHaveBeenCalledWith(entity, scene, { a: 1 });
+      expect(stateBOnEnterSpy).toHaveBeenCalledWith(entity, scene, { a: 1 });
     });
   });
 });

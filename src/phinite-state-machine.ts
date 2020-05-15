@@ -56,7 +56,7 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
     this.currentState.onUpdate(this.entity, this.scene);
   }
 
-  private doTransition(transition: Transition<T>) {
+  private doTransition(transition: Transition<T>, transitionData?: any) {
     const nextStateId =
       typeof transition.to === 'string'
         ? transition.to
@@ -66,10 +66,14 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
       ? transition.onTransition.bind(transition)
       : () => {};
 
-    this.transitionTo(nextStateId, onTransition);
+    this.transitionTo(nextStateId, onTransition, transitionData);
   }
 
-  transitionTo(stateId: string, onTransition?: TransitionCallback<T>) {
+  transitionTo(
+    stateId: string,
+    onTransition?: TransitionCallback<T>,
+    transitionData?: any
+  ) {
     const nextState = this.states.find(state => state.id === stateId);
     if (!nextState) {
       throw new Error(`PhiniteStateMachine - no state found for ${stateId}`);
@@ -77,13 +81,13 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
 
     this.cancelTransitionTriggers();
 
-    this.currentState.onLeave(this.entity, this.scene);
+    this.currentState.onLeave(this.entity, this.scene, transitionData);
 
-    onTransition?.(this.entity, this.scene);
+    onTransition?.(this.entity, this.scene, transitionData);
 
     this.currentState = nextState;
 
-    this.currentState.onEnter(this.entity, this.scene);
+    this.currentState.onEnter(this.entity, this.scene, transitionData);
 
     this.registerTransitionTriggers();
   }
@@ -122,9 +126,9 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
   private registerTransitionTriggers() {
     this.currentState.transitions.forEach(transition => {
       const triggerId = generateUuid();
-      const activateTrigger: TriggerActivator = () => {
+      const activateTrigger: TriggerActivator = (transitionData?: any) => {
         if (this.triggerIds.includes(triggerId)) {
-          this.doTransition(transition);
+          this.doTransition(transition, transitionData);
         }
       };
       this.triggerIds.push(triggerId);

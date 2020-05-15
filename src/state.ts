@@ -3,7 +3,7 @@ import { Transition } from './transition';
 type StateCallback<T, U extends Phaser.Scene = Phaser.Scene> = (
   entity: T,
   scene: U,
-  data: object
+  transitionData: object
 ) => void;
 
 type StateCallbacks<T, U extends Phaser.Scene = Phaser.Scene> = {
@@ -17,29 +17,30 @@ export class State<T, U extends Phaser.Scene = Phaser.Scene> {
   public transitions: Transition<T>[];
 
   private callbacks: StateCallbacks<T, U>;
+  // @ts-ignore
   private data: object;
 
   constructor(
     id: string,
     transitions: Transition<T>[],
     callbacks: StateCallbacks<T, U>,
-    data: object = {}
+    stateData: object = {}
   ) {
     this.id = id;
     this.transitions = transitions;
     this.callbacks = callbacks;
-    this.data = data;
+    this.data = stateData;
   }
 
-  onEnter(entity: T, scene: U) {
-    this.callbacks.onEnter?.(entity, scene, this.data);
+  onEnter(entity: T, scene: U, transitionData?: any) {
+    this.callbacks.onEnter?.(entity, scene, transitionData);
   }
 
-  onLeave(entity: T, scene: U) {
-    this.callbacks.onLeave?.(entity, scene, this.data);
+  onLeave(entity: T, scene: U, transitionData?: any) {
+    this.callbacks.onLeave?.(entity, scene, transitionData);
   }
 
-  onUpdate(entity: T, scene: U) {
-    this.callbacks.onUpdate?.(entity, scene, this.data);
+  onUpdate(entity: T, scene: U, transitionData?: any) {
+    this.callbacks.onUpdate?.(entity, scene, transitionData);
   }
 }
