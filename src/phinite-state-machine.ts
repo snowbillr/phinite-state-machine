@@ -48,6 +48,10 @@ export class PhiniteStateMachine<T, U extends Phaser.Scene = Phaser.Scene> {
     this.registerTransitionTriggers();
   }
 
+  stop() {
+    this.cancelTransitionTriggers();
+  }
+
   update() {
     this.currentState.onUpdate(this.entity, this.scene);
   }

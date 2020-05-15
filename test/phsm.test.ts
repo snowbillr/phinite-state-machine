@@ -101,5 +101,64 @@ describe('PhiniteStateMachine', () => {
       expect(phsm.currentState.id).toEqual('b');
       expect(transitionSpy).toHaveBeenCalled();
     });
+
+    it('will not trigger a transition when stopped and will once started again', () => {
+      const entity = {
+        id: 'entity',
+      };
+
+      const onTransitionSpy = jest.fn();
+      let triggerTransition: () => void;
+      class SimpleTransition extends Transition<typeof entity, Phaser.Scene> {
+        constructor() {
+          super('stateB');
+        }
+
+        registerTrigger(activateTransition: () => void) {
+          triggerTransition = activateTransition;
+          return () => null;
+        }
+
+        onTransition(e: typeof entity, scene: Phaser.Scene) {
+          onTransitionSpy(e, scene);
+        }
+      }
+
+      const stateAOnLeaveSpy = jest.fn();
+      const stateBOnEnterSpy = jest.fn();
+      const states = [
+        new State('stateA', [new SimpleTransition()], {
+          onLeave: stateAOnLeaveSpy,
+        }),
+        new State('stateB', [], {
+          onEnter: stateBOnEnterSpy,
+        }),
+      ];
+
+      const scene = (new Scene() as unknown) as Phaser.Scene;
+      const phsm = new PhiniteStateMachine<typeof entity>(
+        scene,
+        entity,
+        states,
+        states[0]
+      );
+      phsm.start();
+
+      phsm.stop();
+
+      triggerTransition!();
+
+      expect(stateAOnLeaveSpy).not.toHaveBeenCalled();
+      expect(onTransitionSpy).not.toHaveBeenCalled();
+      expect(stateBOnEnterSpy).not.toHaveBeenCalled();
+
+      phsm.start();
+
+      triggerTransition!();
+
+      expect(stateAOnLeaveSpy).toHaveBeenCalled();
+      expect(onTransitionSpy).toHaveBeenCalled();
+      expect(stateBOnEnterSpy).toHaveBeenCalled();
+    });
   });
 });
